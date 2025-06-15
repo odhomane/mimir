@@ -1,15 +1,5 @@
 version: "3.4"
 services:
-  minio:
-    image: minio/minio
-    entrypoint: [""]
-    command: ["sh", "-c", "mkdir -p /data/mimir && minio server --quiet /data"]
-    environment:
-      - MINIO_ROOT_USER=mimir
-      - MINIO_ROOT_PASSWORD=supersecret
-    volumes:
-      - minio-data:/data
-
   grafana:
     image: grafana/grafana:latest
     pull_policy: always
@@ -63,13 +53,12 @@ services:
       - "mimir-3"
     ports:
       - 9009:9009
+      - 8080:8080  # Remote write endpoint
 
   mimir-1:
     image: grafana/mimir:latest
     command: ["-config.file=/etc/mimir.yaml"]
     hostname: mimir-1
-    depends_on:
-      - minio
     volumes:
       - ./config/mimir.yaml:/etc/mimir.yaml
       - ./config/alertmanager-fallback-config.yaml:/etc/alertmanager-fallback-config.yaml
@@ -79,8 +68,6 @@ services:
     image: grafana/mimir:latest
     command: ["-config.file=/etc/mimir.yaml"]
     hostname: mimir-2
-    depends_on:
-      - minio
     volumes:
       - ./config/mimir.yaml:/etc/mimir.yaml
       - ./config/alertmanager-fallback-config.yaml:/etc/alertmanager-fallback-config.yaml
@@ -90,8 +77,6 @@ services:
     image: grafana/mimir:latest
     command: ["-config.file=/etc/mimir.yaml"]
     hostname: mimir-3
-    depends_on:
-      - minio
     volumes:
       - ./config/mimir.yaml:/etc/mimir.yaml
       - ./config/alertmanager-fallback-config.yaml:/etc/alertmanager-fallback-config.yaml
@@ -101,4 +86,3 @@ volumes:
   mimir-1-data:
   mimir-2-data:
   mimir-3-data:
-  minio-data:

@@ -3,26 +3,42 @@
 # Run Mimir in single process mode, with all components running in 1 process.
 target: all,alertmanager,overrides-exporter
 
-# Configure Mimir to use Minio as object storage backend.
+# Configure Mimir to use S3 as object storage backend with IAM instance profile
 common:
   storage:
     backend: s3
     s3:
-      endpoint: minio:9000
-      access_key_id: mimir
-      secret_access_key: supersecret
-      insecure: true
-      bucket_name: mimir
+      bucket_name: c000-grafana
+      region: us-east-1 # Replace with your AWS region
+      # No access_key_id or secret_access_key - using IAM instance profile
 
-# Blocks storage requires a prefix when using a common object storage bucket.
+      # Blocks storage requires a prefix when using a common object storage bucket.
 blocks_storage:
+  backend: s3
+  s3:
+    bucket_name: c000-grafana
+    region: us-east-1 # Replace with your AWS region
   storage_prefix: blocks
   tsdb:
     dir: /data/ingester
 
+# Ruler storage configuration for S3
+ruler_storage:
+  backend: s3
+  s3:
+    bucket_name: c000-grafana
+    region: us-east-1 # Replace with your AWS region
+
+# Alertmanager storage configuration for S3
+alertmanager_storage:
+  backend: s3
+  s3:
+    bucket_name: c000-grafana
+    region: us-east-1 # Replace with your AWS region
+
 # Use memberlist, a gossip-based protocol, to enable the 3 Mimir replicas to communicate
 memberlist:
-  join_members: [mimir-1, mimir-2, mimir-3]
+  join_members: [ mimir-1, mimir-2, mimir-3 ]
 
 ruler:
   rule_path: /data/ruler
